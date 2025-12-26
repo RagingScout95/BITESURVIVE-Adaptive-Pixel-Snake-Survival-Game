@@ -1,28 +1,26 @@
-## BiteSurvive — Adaptive Pixel Snake Survival Game
+# BiteSurvive — Adaptive Pixel Snake Survival Game
 
-Grid-based pixel snake survival game (HTML5 Canvas) with **energy/hunger**, **procedural levels**, and **predator snakes**.  
-Optional Spring Boot backend provides a **GraphQL leaderboard**.
+**BiteSurvive** is a grid-based pixel snake survival game built with **HTML5 Canvas**.  
+Survive by managing **energy/hunger**, navigating **procedurally generated levels**, and avoiding **predator snakes**.
 
----
+An optional **Spring Boot + GraphQL** backend is included for leaderboard persistence.
 
 ## Features
 
-- **Pixel-perfect rendering** (16×16 tiles)
-- **Energy system** (move + turn drains energy)
-- **Procedural maps** (walls + portals + food)
-- **Enemy snakes** (AI predators)
-- **Leaderboard backend** (Spring Boot + GraphQL + Postgres)
-
----
+- **16×16 pixel tile rendering**
+- **Energy system** (moving + turning drains energy)
+- **Procedural levels** (walls, portals, food)
+- **Enemy snakes** (predator AI)
+- **Leaderboard backend** (GraphQL + PostgreSQL)
 
 ## Controls
 
-- **Move**: WASD or Arrow Keys
+- **Move**: WASD / Arrow Keys
 - **Pause**: P
 
----
+## Run the game (frontend)
 
-## Quick start (frontend only)
+### Option A: Python (recommended)
 
 From the repo root:
 
@@ -30,17 +28,15 @@ From the repo root:
 python -m http.server 8000
 ```
 
-Then open `http://localhost:8000` in your browser.
+Open `http://localhost:8000`.
 
-Windows shortcut:
+### Option B: Windows batch script
 
 ```bash
 .\run-frontend.bat
 ```
 
----
-
-## Backend (optional leaderboard)
+## Backend (optional: leaderboard)
 
 ### Requirements
 
@@ -49,11 +45,11 @@ Windows shortcut:
 
 ### Configure database
 
-The backend reads these environment variables (with sensible defaults):
+Create a database named `bitesurvive`, then set environment variables:
 
-- `DB_URL` (default: `jdbc:postgresql://localhost:5432/bitesurvive`)
-- `DB_USER` (default: `postgres`)
-- `DB_PASSWORD` (default: `postgres`)
+- `DB_URL` (example: `jdbc:postgresql://localhost:5432/bitesurvive`)
+- `DB_USER` (example: `postgres`)
+- `DB_PASSWORD` (example: `postgres`)
 
 ### Run backend
 
@@ -61,28 +57,22 @@ The backend reads these environment variables (with sensible defaults):
 .\backend\run-backend.bat
 ```
 
-Backend runs on `http://localhost:8080`  
-GraphQL endpoint: `http://localhost:8080/graphql`
-
----
+Backend: `http://localhost:8080`  
+GraphQL: `http://localhost:8080/graphql`
 
 ## Project structure
 
-- `index.html`, `styles.css` — UI + layout
-- `js/` — game logic + renderer
-- `assets/` — sprite atlas + background
-- `backend/` — Spring Boot GraphQL API (leaderboard)
+- `index.html`, `styles.css` — UI
+- `js/` — game code
+- `assets/` — images/sprites
+- `backend/` — leaderboard API
 
----
+## Troubleshooting
 
-## Sprite atlas (assets)
-
-Sprite atlas: `assets/all_stuff.png` (16×16 tiles, 16 columns).  
-**Direction is encoded in the tile selection** (no runtime rotation for snake sprites).
-
----
+- **Blank screen / no sprites**: make sure you run from a local server (don’t open `index.html` directly) and confirm `assets/all_stuff.png` exists.
+- **Backend errors**: confirm PostgreSQL is running and `DB_URL/DB_USER/DB_PASSWORD` are set correctly.
 
 ## License
 
-MIT — see `LICENSE`.
+MIT (see `LICENSE`).
 
