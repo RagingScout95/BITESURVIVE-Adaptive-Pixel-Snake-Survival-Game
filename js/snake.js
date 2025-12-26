@@ -12,6 +12,7 @@ export class Snake {
         this.maxEnergy = INITIAL_ENERGY;
         this.growthPending = 0;
         this.alive = true;
+        this.justTeleported = false; // Track if snake just teleported through portal
 
         // Initialize body - create segments going backwards from head
         // Each segment should be exactly 1 tile away from the previous
@@ -58,7 +59,7 @@ export class Snake {
         this.nextDirection = newDir;
     }
 
-    move() {
+    move(energyDrainMultiplier = 1.0) {
         if (!this.alive) return;
 
         // Update direction
@@ -76,6 +77,9 @@ export class Snake {
         const portalDest = this.grid.getPortalDestination(newHead);
         if (portalDest) {
             newHead = portalDest;
+            this.justTeleported = true; // Mark that we just teleported
+        } else {
+            this.justTeleported = false; // Reset if not teleporting
         }
 
         // Check collisions
@@ -105,10 +109,10 @@ export class Snake {
         // Update occupied tiles
         this.grid.setOccupied(newHead, true);
 
-        // Drain energy
-        let energyDrain = ENERGY_DRAIN_MOVE;
+        // Drain energy (scaled by difficulty multiplier)
+        let energyDrain = ENERGY_DRAIN_MOVE * energyDrainMultiplier;
         if (wasTurning) {
-            energyDrain += ENERGY_DRAIN_TURN;
+            energyDrain += ENERGY_DRAIN_TURN * energyDrainMultiplier;
         }
         this.energy = Math.max(0, this.energy - energyDrain);
 
@@ -303,15 +307,29 @@ export class Snake {
         const curr = this.body[index];
         const next = this.body[index + 1];
 
-        // Calculate direction accounting for world wrapping
-        let dirIn = {
-            x: curr.x - prev.x,
-            y: curr.y - prev.y
-        };
-        let dirOut = {
-            x: next.x - curr.x,
-            y: next.y - curr.y
-        };
+        // Special case: if we just teleported and this is the segment right after the head (index 1)
+        // Use the snake's current direction instead of calculating from positions
+        let dirIn, dirOut;
+        if (this.justTeleported && index === 1) {
+            // After teleport, the segment at index 1 should continue in the same direction
+            // Use the snake's direction as dirIn (coming from the teleported head)
+            dirIn = { x: this.direction.x, y: this.direction.y };
+            // Calculate dirOut normally (from current to next segment)
+            dirOut = {
+                x: next.x - curr.x,
+                y: next.y - curr.y
+            };
+        } else {
+            // Normal case: calculate both directions from positions
+            dirIn = {
+                x: curr.x - prev.x,
+                y: curr.y - prev.y
+            };
+            dirOut = {
+                x: next.x - curr.x,
+                y: next.y - curr.y
+            };
+        }
 
         // Handle world wrapping
         if (Math.abs(dirIn.x) > this.grid.width / 2) {

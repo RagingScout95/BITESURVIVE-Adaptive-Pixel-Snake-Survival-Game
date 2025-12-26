@@ -43,7 +43,7 @@ export class DifficultySystem {
     }
 
     getEnergyDrainMultiplier() {
-        return 1 + (this.currentDifficulty - 1) * 0.1;
+        return 1 + (this.currentDifficulty - 1) * 0.25; // 25% more hunger drain per difficulty level
     }
 
     reset() {

@@ -41,7 +41,14 @@ export class FoodSystem {
     }
 
     getFoodAt(pos) {
-        return this.foods.find(f => f.x === pos.x && f.y === pos.y);
+        // Wrap the position to ensure correct comparison
+        const wrappedX = this.grid.wrapX(pos.x);
+        const wrappedY = this.grid.wrapY(pos.y);
+        return this.foods.find(f => {
+            const foodX = this.grid.wrapX(f.x);
+            const foodY = this.grid.wrapY(f.y);
+            return foodX === wrappedX && foodY === wrappedY;
+        });
     }
 
     clear() {

@@ -8,11 +8,12 @@ body {
     font-family: 'Courier New', monospace;
     background-color: #181818;
     color: #ffffff;
-    overflow: hidden;
+    overflow: auto;
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 100vh;
+    min-height: 100vh;
+    padding: 20px;
 }
 
 #game-container {
@@ -20,9 +21,21 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-    /* Scale up the entire game for better visibility (1.5x) */
-    transform: scale(1.5);
-    transform-origin: center center;
+    gap: 50px;
+    width: 100%;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+#canvas-wrapper {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    /* Reserve space for scaled canvas: 512px * 1.3 = 665.6px */
+    width: 665.6px;
+    height: 665.6px;
+    flex-shrink: 0;
 }
 
 #game-canvas {
@@ -31,6 +44,30 @@ body {
     image-rendering: crisp-edges;
     background-color: #212121;
     border: 2px solid #333;
+    /* Scale canvas display size to 1.3x (internal resolution stays 512x512) */
+    width: 665.6px !important;
+    height: 665.6px !important;
+}
+
+#left-panel {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 15px;
+    width: 250px;
+    flex-shrink: 0;
+    padding-right: 20px;
+}
+
+#right-panel {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 15px;
+    width: 250px;
+    flex-shrink: 0;
+    padding-left: 20px;
+    height: 665.6px; /* Match canvas height */
 }
 
 #ui-overlay {
@@ -47,12 +84,192 @@ body {
 }
 
 #hud {
-    position: absolute;
-    top: 10px;
-    left: 10px;
-    background-color: rgba(33, 33, 33, 0.8);
-    padding: 10px;
+    background-color: rgba(33, 33, 33, 0.9);
+    padding: 15px;
     border: 1px solid #555;
+    border-radius: 4px;
+    width: 100%;
+    max-width: 230px;
+}
+
+#instructions {
+    background-color: rgba(33, 33, 33, 0.9);
+    padding: 15px;
+    border: 1px solid #555;
+    border-radius: 4px;
+    font-size: 12px;
+    width: 100%;
+    max-width: 230px;
+}
+
+#leaderboard-panel {
+    background-color: rgba(33, 33, 33, 0.9);
+    padding: 15px;
+    border: 1px solid #555;
+    border-radius: 4px;
+    font-size: 12px;
+    width: 100%;
+    max-width: 230px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+
+#leaderboard-panel h3 {
+    color: #4CAF50;
+    margin-bottom: 10px;
+    margin-top: 0;
+    font-size: 14px;
+    border-bottom: 1px solid #555;
+    padding-bottom: 5px;
+}
+
+#leaderboard-content {
+    flex: 1;
+    overflow-y: auto;
+    min-height: 0;
+    /* Custom scrollbar styling */
+    scrollbar-width: thin;
+    scrollbar-color: #555 #333;
+}
+
+#leaderboard-content::-webkit-scrollbar {
+    width: 8px;
+}
+
+#leaderboard-content::-webkit-scrollbar-track {
+    background: #333;
+    border-radius: 4px;
+}
+
+#leaderboard-content::-webkit-scrollbar-thumb {
+    background: #555;
+    border-radius: 4px;
+}
+
+#leaderboard-content::-webkit-scrollbar-thumb:hover {
+    background: #666;
+}
+
+.leaderboard-entry-mini {
+    padding: 6px 0;
+    margin: 4px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    font-size: 11px;
+    line-height: 1.4;
+}
+
+.leaderboard-entry-mini:last-child {
+    border-bottom: none;
+}
+
+.leaderboard-entry-mini .rank {
+    color: #4CAF50;
+    font-weight: bold;
+    display: inline-block;
+    min-width: 25px;
+}
+
+.leaderboard-entry-mini .name {
+    color: #fff;
+    font-weight: bold;
+}
+
+.leaderboard-entry-mini .score {
+    color: #aaa;
+    font-size: 10px;
+    display: block;
+    margin-top: 2px;
+}
+
+#messages {
+    background-color: rgba(33, 33, 33, 0.9);
+    padding: 15px;
+    border: 1px solid #555;
+    border-radius: 4px;
+    font-size: 12px;
+    width: 100%;
+    max-width: 230px;
+    flex: 0 0 15%; /* 15% of right panel height (approximately 10-20% as requested) */
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+
+#messages h3 {
+    color: #4CAF50;
+    margin-bottom: 10px;
+    margin-top: 0;
+    font-size: 14px;
+    border-bottom: 1px solid #555;
+    padding-bottom: 5px;
+}
+
+#messages-content {
+    flex: 1;
+    overflow-y: auto;
+    min-height: 0;
+    /* Custom scrollbar styling */
+    scrollbar-width: thin;
+    scrollbar-color: #555 #333;
+}
+
+#messages-content::-webkit-scrollbar {
+    width: 8px;
+}
+
+#messages-content::-webkit-scrollbar-track {
+    background: #333;
+    border-radius: 4px;
+}
+
+#messages-content::-webkit-scrollbar-thumb {
+    background: #555;
+    border-radius: 4px;
+}
+
+#messages-content::-webkit-scrollbar-thumb:hover {
+    background: #666;
+}
+
+.message-item {
+    margin: 8px 0;
+    padding: 5px 0;
+    color: #fff;
+    line-height: 1.4;
+    font-size: 11px;
+}
+
+#instructions h3 {
+    color: #4CAF50;
+    margin-bottom: 10px;
+    margin-top: 0;
+    font-size: 14px;
+    border-bottom: 1px solid #555;
+    padding-bottom: 5px;
+}
+
+#instructions h3:not(:first-child) {
+    margin-top: 15px;
+}
+
+#instructions p {
+    margin: 8px 0;
+    color: #aaa;
+    line-height: 1.4;
+}
+
+.instruction-item {
+    margin: 8px 0;
+    padding: 5px 0;
+    color: #fff;
+}
+
+.instruction-item strong {
+    color: #4CAF50;
+    display: inline-block;
+    min-width: 80px;
 }
 
 #energy-bar-container {

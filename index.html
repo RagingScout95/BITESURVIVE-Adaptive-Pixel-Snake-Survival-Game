@@ -8,7 +8,8 @@
 </head>
 <body>
     <div id="game-container">
-        <div id="ui-overlay">
+        <!-- Left Panel: HUD (Energy & Stats) and Instructions -->
+        <div id="left-panel">
             <div id="hud">
                 <div id="energy-bar-container">
                     <div id="energy-label">Energy</div>
@@ -23,31 +24,75 @@
                     <div>Difficulty: <span id="difficulty-value">1</span></div>
                 </div>
             </div>
-            <div id="game-over-screen" class="hidden">
-                <h2>Game Over</h2>
-                <p id="game-over-message"></p>
-                <div id="score-input-container">
-                    <input type="text" id="player-name" placeholder="Enter your name" maxlength="20">
-                    <button id="submit-score">Submit Score</button>
+            <div id="instructions">
+                <h3>Controls</h3>
+                <div class="instruction-item">
+                    <strong>W / ↑</strong> - Move Up
                 </div>
-            </div>
-            <div id="leaderboard-screen" class="hidden">
-                <h2>Leaderboard</h2>
-                <div id="leaderboard-list"></div>
-                <button id="play-again">Play Again</button>
-            </div>
-            <div id="pause-screen" class="hidden">
-                <h2>Paused</h2>
-                <p>Press P to resume</p>
-            </div>
-            <div id="start-screen">
-                <h1>Adaptive Pixel Snake</h1>
-                <p>Survive as long as possible!</p>
-                <p>Controls: WASD or Arrow Keys</p>
-                <button id="start-button">Start Game</button>
+                <div class="instruction-item">
+                    <strong>S / ↓</strong> - Move Down
+                </div>
+                <div class="instruction-item">
+                    <strong>A / ←</strong> - Move Left
+                </div>
+                <div class="instruction-item">
+                    <strong>D / →</strong> - Move Right
+                </div>
+                <div class="instruction-item">
+                    <strong>P</strong> - Pause/Resume
+                </div>
+                <h3>Objective</h3>
+                <p>Eat food to grow and survive!</p>
+                <p>Avoid walls, enemies, and your own body.</p>
+                <p>Keep your energy high!</p>
             </div>
         </div>
-        <canvas id="game-canvas"></canvas>
+
+        <!-- Center: Canvas -->
+        <div id="canvas-wrapper">
+            <div id="ui-overlay">
+                <div id="game-over-screen" class="hidden">
+                    <h2>Game Over</h2>
+                    <p id="game-over-message"></p>
+                    <div id="score-input-container">
+                        <input type="text" id="player-name" placeholder="Enter your name" maxlength="20">
+                        <button id="submit-score">Submit Score</button>
+                    </div>
+                </div>
+                <div id="leaderboard-screen" class="hidden">
+                    <h2>Leaderboard</h2>
+                    <div id="leaderboard-list"></div>
+                    <button id="play-again">Play Again</button>
+                </div>
+                <div id="pause-screen" class="hidden">
+                    <h2>Paused</h2>
+                    <p>Press P to resume</p>
+                </div>
+                <div id="start-screen">
+                    <h1>Adaptive Pixel Snake</h1>
+                    <p>Survive as long as possible!</p>
+                    <p>Controls: WASD or Arrow Keys</p>
+                    <button id="start-button">Start Game</button>
+                </div>
+            </div>
+            <canvas id="game-canvas"></canvas>
+        </div>
+
+        <!-- Right Panel: Game Messages and Leaderboard -->
+        <div id="right-panel">
+            <div id="messages">
+                <h3>Game Messages</h3>
+                <div id="messages-content">
+                    <p class="message-item">Welcome! Press Start to begin.</p>
+                </div>
+            </div>
+            <div id="leaderboard-panel">
+                <h3>Top 10 Leaderboard</h3>
+                <div id="leaderboard-content">
+                    <p class="message-item">Loading...</p>
+                </div>
+            </div>
+        </div>
     </div>
     <script type="module" src="js/main.js"></script>
 </body>

@@ -29,6 +29,7 @@ class Game {
         this.playerSnake = null;
         this.enemySnakes = [];
         this.enemyAIs = [];
+        this.enemyRespawnQueue = []; // Array of {enemy, ai, respawnTime}
         this.foodSystem = new FoodSystem(this.grid);
         this.wallSystem = new WallSystem(this.grid);
         this.levelGenerator = new LevelGenerator(this.grid);
@@ -39,9 +40,12 @@ class Game {
         this.timeSurvived = 0;
         this.score = 0;
         this.keys = {};
+        this.ENEMY_RESPAWN_DELAY = 5000; // 5 seconds respawn delay
 
         this.loadAssets();
         this.setupEventListeners();
+        // Load leaderboard (async, will load in background)
+        this.loadLeaderboard();
     }
 
     async loadAssets() {
@@ -228,8 +232,14 @@ class Game {
         if (this.gameState !== 'playing') return;
 
         const now = performance.now();
-        if (now - this.lastTick >= GAME_TICK_MS) {
-            this.update();
+        // Calculate dynamic tick time based on difficulty (faster = lower tick time)
+        const currentDifficulty = this.difficultySystem ? this.difficultySystem.getDifficulty() : 1;
+        const speedMultiplier = 1 + (currentDifficulty - 1) * 0.15; // 15% faster per difficulty level
+        const dynamicTickMs = Math.max(40, GAME_TICK_MS / speedMultiplier); // Minimum 40ms tick time
+        
+        if (now - this.lastTick >= dynamicTickMs) {
+            const actualElapsed = now - this.lastTick;
+            this.update(actualElapsed);
             this.lastTick = now;
         }
 
@@ -237,16 +247,19 @@ class Game {
         requestAnimationFrame(() => this.gameLoop());
     }
 
-    update() {
-        // Update time
-        this.timeSurvived += GAME_TICK_MS / 1000;
+    update(actualElapsedMs = GAME_TICK_MS) {
+        // Update difficulty first to get current values
+        const difficulty = this.difficultySystem.update(this.playerSnake, this.timeSurvived);
+        
+        // Update time using actual elapsed time
+        this.timeSurvived += actualElapsedMs / 1000;
         this.updateUI();
 
-        // Update difficulty
-        const difficulty = this.difficultySystem.update(this.playerSnake, this.timeSurvived);
+        // Get energy drain multiplier for progressive hunger
+        const energyDrainMultiplier = this.difficultySystem.getEnergyDrainMultiplier();
 
-        // Move player snake
-        this.playerSnake.move();
+        // Move player snake with energy drain multiplier
+        this.playerSnake.move(energyDrainMultiplier);
 
         // Check food collision (player)
         const playerHead = this.playerSnake.getHead();
@@ -257,10 +270,36 @@ class Game {
             this.score += Math.max(10, food.energy); // Score based on food energy
         }
 
-        // Move enemy snakes
+        // Handle enemy respawns
+        const now = performance.now();
+        for (let i = this.enemyRespawnQueue.length - 1; i >= 0; i--) {
+            const respawn = this.enemyRespawnQueue[i];
+            if (now >= respawn.respawnTime) {
+                // Respawn enemy
+                const enemySpawn = this.findEnemySpawn();
+                if (enemySpawn) {
+                    const newEnemy = new Snake(this.grid, enemySpawn, DIRECTIONS.LEFT, true);
+                    const newAI = new EnemyAI(newEnemy, this.grid, this.playerSnake, this.foodSystem);
+                    this.enemySnakes.push(newEnemy);
+                    this.enemyAIs.push(newAI);
+                    console.log(`[Main] Enemy respawned at (${enemySpawn.x}, ${enemySpawn.y})`);
+                }
+                this.enemyRespawnQueue.splice(i, 1);
+            }
+        }
+
+        // Move enemy snakes with energy drain multiplier
         for (let i = this.enemySnakes.length - 1; i >= 0; i--) {
             const enemy = this.enemySnakes[i];
             if (!enemy.alive) {
+                // Schedule respawn instead of immediately removing
+                const respawnTime = now + this.ENEMY_RESPAWN_DELAY;
+                this.enemyRespawnQueue.push({
+                    enemy: enemy,
+                    ai: this.enemyAIs[i],
+                    respawnTime: respawnTime
+                });
+                console.log(`[Main] Enemy died, will respawn in ${this.ENEMY_RESPAWN_DELAY/1000} seconds`);
                 this.enemySnakes.splice(i, 1);
                 this.enemyAIs.splice(i, 1);
                 continue;
@@ -268,22 +307,37 @@ class Game {
 
             // Update AI
             this.enemyAIs[i].update();
-            enemy.move();
+            enemy.move(energyDrainMultiplier);
 
             // Check food collision (enemy)
             const enemyHead = enemy.getHead();
-            const enemyFood = this.foodSystem.getFoodAt(enemyHead);
+            // Wrap the head position to ensure correct collision detection
+            const wrappedEnemyHead = {
+                x: this.grid.wrapX(enemyHead.x),
+                y: this.grid.wrapY(enemyHead.y)
+            };
+            
+            const enemyFood = this.foodSystem.getFoodAt(wrappedEnemyHead);
             if (enemyFood) {
+                console.log(`[Main] Enemy ate food at (${wrappedEnemyHead.x}, ${wrappedEnemyHead.y}), Energy: ${enemyFood.energy}, Enemy will grow!`);
                 enemy.eat(enemyFood.energy);
-                this.foodSystem.removeFood(enemyHead);
+                this.foodSystem.removeFood(wrappedEnemyHead);
             }
 
-            // Check collision with player
+            // Check collision: Enemy head hits player head - player dies
             if (enemyHead.x === playerHead.x && enemyHead.y === playerHead.y) {
                 this.playerSnake.alive = false;
             }
 
-            // Check if enemy body collides with player
+            // Check collision: Enemy head hits player body - enemy dies (player survives)
+            for (let j = 1; j < this.playerSnake.body.length; j++) {
+                if (enemyHead.x === this.playerSnake.body[j].x && enemyHead.y === this.playerSnake.body[j].y) {
+                    enemy.alive = false;
+                    break;
+                }
+            }
+
+            // Check collision: Player head hits enemy body - player dies
             for (let j = 1; j < enemy.body.length; j++) {
                 if (enemy.body[j].x === playerHead.x && enemy.body[j].y === playerHead.y) {
                     this.playerSnake.alive = false;
@@ -457,12 +511,14 @@ class Game {
             await GameAPI.submitScore(scoreData);
             const leaderboard = await GameAPI.getLeaderboard();
             this.showLeaderboard(leaderboard);
+            this.updateLeaderboardPanel(leaderboard); // Update right panel leaderboard
         } catch (error) {
             console.error('Failed to submit score:', error);
             // Show leaderboard even if submission fails
             try {
                 const leaderboard = await GameAPI.getLeaderboard();
                 this.showLeaderboard(leaderboard);
+                this.updateLeaderboardPanel(leaderboard); // Update right panel leaderboard
             } catch (e) {
                 alert('Failed to connect to server. Please ensure the backend is running.');
             }
@@ -492,6 +548,44 @@ class Game {
         });
     }
 
+    async loadLeaderboard() {
+        try {
+            const leaderboard = await GameAPI.getLeaderboard();
+            this.updateLeaderboardPanel(leaderboard);
+        } catch (error) {
+            console.error('Failed to load leaderboard:', error);
+            const leaderboardContent = document.getElementById('leaderboard-content');
+            if (leaderboardContent) {
+                leaderboardContent.innerHTML = '<p class="message-item">Unable to load leaderboard.</p>';
+            }
+        }
+    }
+
+    updateLeaderboardPanel(leaderboard) {
+        const leaderboardContent = document.getElementById('leaderboard-content');
+        if (!leaderboardContent) return;
+
+        leaderboardContent.innerHTML = '';
+
+        if (!leaderboard || leaderboard.length === 0) {
+            leaderboardContent.innerHTML = '<p class="message-item">No scores yet. Be the first!</p>';
+            return;
+        }
+
+        // Show top 10
+        const top10 = leaderboard.slice(0, 10);
+        top10.forEach((entry, index) => {
+            const div = document.createElement('div');
+            div.className = 'leaderboard-entry-mini';
+            div.innerHTML = `
+                <span class="rank">#${index + 1}</span>
+                <span class="name">${entry.playerName}</span>
+                <span class="score">Score: ${entry.score} | Time: ${entry.timeSurvived}s</span>
+            `;
+            leaderboardContent.appendChild(div);
+        });
+    }
+
     resetGame() {
         this.grid.walls.clear();
         this.grid.portals.clear();
@@ -499,11 +593,13 @@ class Game {
         this.foodSystem.clear();
         this.enemySnakes = [];
         this.enemyAIs = [];
+        this.enemyRespawnQueue = [];
         this.playerSnake = null;
 
         document.getElementById('leaderboard-screen').classList.add('hidden');
         document.getElementById('start-screen').classList.remove('hidden');
         this.gameState = 'start';
+        this.loadLeaderboard(); // Reload leaderboard when resetting
     }
 }
 

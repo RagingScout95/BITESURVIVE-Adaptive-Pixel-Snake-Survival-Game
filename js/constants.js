@@ -97,7 +97,7 @@ export const ENERGY_DRAIN_MOVE = 0.1;
 export const ENERGY_DRAIN_TURN = 0.2;
 export const ENERGY_FOOD_BASE = 20;
 export const INITIAL_SNAKE_LENGTH = 3;
-export const GAME_TICK_MS = 150;
+export const GAME_TICK_MS = 120;
 
 // Atlas Configuration
 export const ATLAS_TILE_SIZE = 16;
