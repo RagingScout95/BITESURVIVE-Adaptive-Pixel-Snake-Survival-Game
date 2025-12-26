@@ -51,6 +51,13 @@ Create a database named `bitesurvive`, then set environment variables:
 - `DB_USER` (example: `postgres`)
 - `DB_PASSWORD` (example: `postgres`)
 
+Easiest on Windows:
+
+- Copy `backend/env.example` to `backend/.env`
+- Edit `backend/.env` with your local DB credentials
+
+`backend/.env` is **ignored by git** and will not be pushed.
+
 ### Run backend
 
 ```bash
