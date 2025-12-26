@@ -79,27 +79,33 @@ GraphQL: `http://localhost:8080/graphql`
 The game uses a **single texture atlas**: `assets/all_stuff.png`
 
 - **Tile size**: 16×16 px
-- **Atlas columns**: 16
+- **Atlas layout**: 8 columns × 8 rows = 64 tiles total
 - **Indexing**: `(row, col)` where `(0,0)` is top-left
-- **Flat index**: `index = row * 16 + col`
+- **Flat index formula**: `index = row * 8 + col`
 
 ### Direction is encoded in tiles
 
 Snake, enemy snake, and walls **do not rotate at runtime**.  
 Each direction/turn already exists as a dedicated tile in the atlas, so the code selects the correct tile index.
 
+### Atlas organization
+
+- **Rows 0-2**: Player Snake tiles
+- **Rows 3-5**: Enemy/Predatory Snake tiles (same layout as player, offset by 3 rows)
+- **Rows 6-7**: Walls, Food, and Portal tiles
+
 ### Player snake tiles (by `(row,col)` in the atlas)
 
-- **Tail**:
-  - `(0,0)` right, `(0,1)` left, `(1,0)` up, `(1,1)` down
-- **Body (straight)**:
-  - `(2,0)` vertical, `(2,1)` horizontal
-- **Body (turns / corners)**:
-  - `(0,2)` BR, `(0,3)` BL, `(1,2)` TR, `(1,3)` TL
-- **Head**:
-  - `(2,2)` right, `(2,3)` left, `(3,2)` up, `(3,3)` down
+- **Tail** (Row 0-1):
+  - `(0,0)` right →, `(0,1)` left ←, `(1,0)` up ↑, `(1,1)` down ↓
+- **Body (straight)** (Row 2):
+  - `(2,0)` vertical |, `(2,1)` horizontal ─
+- **Body (turns)** (Row 0-1):
+  - `(0,2)` bottom-right, `(0,3)` bottom-left, `(1,2)` top-right, `(1,3)` top-left
+- **Head** (Row 0-1, Cols 4-5):
+  - `(0,4)` right →, `(0,5)` left ←, `(1,4)` up ↑, `(1,5)` down ↓
 
-You can see the numeric mapping in `js/constants.js` under `TILES.*`.
+All tile indices are defined in `js/constants.js` under `TILES.*` with clear documentation.
 
 ### Enemy snake tiles
 
@@ -118,11 +124,14 @@ Implementation detail: the renderer offsets snake tile rows by **+3 rows** for e
 
 File: `js/snake.js`
 
-- **Head**: tile matches current movement direction.
-- **Tail**: tile is chosen from the last two segments so the tail “faces” the correct direction relative to the body.
+- **Head**: tile matches current movement direction (uses `getSegmentTile(0)`).
+- **Tail**: tile is chosen based on direction pointing away from body (uses `getSegmentTile(lastIndex)`).
 - **Body**:
-  - straight segments choose vertical/horizontal
-  - corners choose one of the 4 turn tiles based on the in/out directions
+  - **Straight segments**: choose vertical/horizontal based on movement direction
+  - **Turn segments**: use a direction mapping table with 8 specific turn variables:
+    - `SNAKE_TURN_UP_LEFT`, `SNAKE_TURN_UP_RIGHT`, `SNAKE_TURN_DOWN_LEFT`, `SNAKE_TURN_DOWN_RIGHT`
+    - `SNAKE_TURN_LEFT_UP`, `SNAKE_TURN_LEFT_DOWN`, `SNAKE_TURN_RIGHT_UP`, `SNAKE_TURN_RIGHT_DOWN`
+    - Selected via switch-case based on incoming and outgoing directions
 
 Rendering happens in `js/main.js` and draws each segment with `SpriteRenderer.drawTile(...)`.
 

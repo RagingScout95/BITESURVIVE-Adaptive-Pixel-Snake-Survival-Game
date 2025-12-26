@@ -340,33 +340,35 @@ export class Snake {
             return TILES.SNAKE_BODY_VERTICAL;
         }
 
-        // Turn segment - select correct turn tile based on directions
-        // Each corner tile connects two perpendicular directions
-        // BR: connects bottom (down) and right
-        // BL: connects bottom (down) and left
-        // TR: connects top (up) and right
-        // TL: connects top (up) and left
+        // Turn segment - select correct turn tile based on direction mapping table
+        // Table mapping: snake direction (from) + turn direction (to) → tile index
+        // Convert direction vectors to direction names
+        const snakeDir = this.getDirectionName(dirIn);
+        const turnDir = this.getDirectionName(dirOut);
+        
+        // Use switch-case with descriptive variable names
+        const turnKey = `${snakeDir}_${turnDir}`;
+        switch (turnKey) {
+            case 'up_left':     return TILES.SNAKE_TURN_UP_LEFT;
+            case 'up_right':    return TILES.SNAKE_TURN_UP_RIGHT;
+            case 'down_left':   return TILES.SNAKE_TURN_DOWN_LEFT;
+            case 'down_right':  return TILES.SNAKE_TURN_DOWN_RIGHT;
+            case 'left_up':     return TILES.SNAKE_TURN_LEFT_UP;
+            case 'left_down':   return TILES.SNAKE_TURN_LEFT_DOWN;
+            case 'right_up':    return TILES.SNAKE_TURN_RIGHT_UP;
+            case 'right_down':  return TILES.SNAKE_TURN_RIGHT_DOWN;
+            default:
+                return TILES.SNAKE_BODY_HORIZONTAL; // Fallback
+        }
+    }
 
-        // Map 90-degree turn patterns to corner tiles:
-        // Bottom-Right corner: down->right or right->down
-        if ((dirIn.y === 1 && dirOut.x === 1) || (dirIn.x === 1 && dirOut.y === 1)) {
-            return TILES.SNAKE_TURN_BR;
-        }
-        // Bottom-Left corner: down->left or left->down
-        if ((dirIn.y === 1 && dirOut.x === -1) || (dirIn.x === -1 && dirOut.y === 1)) {
-            return TILES.SNAKE_TURN_BL;
-        }
-        // Top-Right corner: up->right or right->up
-        if ((dirIn.y === -1 && dirOut.x === 1) || (dirIn.x === 1 && dirOut.y === -1)) {
-            return TILES.SNAKE_TURN_TR;
-        }
-        // Top-Left corner: up->left or left->up
-        if ((dirIn.y === -1 && dirOut.x === -1) || (dirIn.x === -1 && dirOut.y === -1)) {
-            return TILES.SNAKE_TURN_TL;
-        }
-
-        // Fallback
-        return TILES.SNAKE_BODY_HORIZONTAL;
+    // Helper method to convert direction vector to direction name
+    getDirectionName(dir) {
+        if (dir.y === -1) return 'up';
+        if (dir.y === 1) return 'down';
+        if (dir.x === -1) return 'left';
+        if (dir.x === 1) return 'right';
+        return 'unknown';
     }
 }
 

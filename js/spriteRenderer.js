@@ -21,7 +21,7 @@ export class SpriteRenderer {
         let pos = this.getTilePosition(tileIndex);
 
         // Adjust tile index for enemy snakes
-        // Player Snake Tiles: rows 0-3 (tiles 0-19, 32-35, 50-51)
+        // Player Snake Tiles: rows 0-2
         // Enemy Snake Tiles: rows 3-5 (same structure, offset by 3 rows)
         // Only apply offset to snake tiles (not food, walls, portals)
         if (isEnemy && tileIndex < TILES.FOOD_1) {
