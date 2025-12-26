@@ -6,6 +6,7 @@ backend/.mvn/
 # IDE
 .idea/
 .vscode/
+.cursor/
 *.iml
 *.swp
 *.swo
@@ -26,4 +27,11 @@ build/
 # Database
 *.db
 *.sqlite
+
+# Local env/config
+.env
+.env.*
+
+# Local backups
+assets/all_stuff_1.png
 
