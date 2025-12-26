@@ -13,6 +13,7 @@ export class Snake {
         this.growthPending = 0;
         this.alive = true;
         this.justTeleported = false; // Track if snake just teleported through portal
+        this.hasReceivedInput = isEnemy; // Enemies can move immediately, player waits for input
 
         // Initialize body - create segments going backwards from head
         // Each segment should be exactly 1 tile away from the previous
@@ -57,10 +58,16 @@ export class Snake {
             return;
         }
         this.nextDirection = newDir;
+        this.hasReceivedInput = true; // Mark that input has been received
     }
 
     move(energyDrainMultiplier = 1.0) {
         if (!this.alive) return;
+        
+        // Player snake: don't move until first input is received
+        if (!this.isEnemy && !this.hasReceivedInput) {
+            return;
+        }
 
         // Update direction
         const wasTurning = this.direction !== this.nextDirection;
