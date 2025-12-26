@@ -326,6 +326,35 @@ body {
     min-width: 300px;
 }
 
+#game-stats {
+    margin: 20px 0;
+    text-align: left;
+    display: inline-block;
+    min-width: 250px;
+}
+
+.stat-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    font-size: 14px;
+}
+
+.stat-row:last-child {
+    border-bottom: none;
+}
+
+.stat-label {
+    color: #aaa;
+    font-weight: normal;
+}
+
+.stat-value {
+    color: #4CAF50;
+    font-weight: bold;
+}
+
 #start-screen h1 {
     margin-bottom: 20px;
     color: #4CAF50;
@@ -364,6 +393,40 @@ body {
     color: white;
     border: 1px solid #555;
     width: 100%;
+}
+
+#player-name:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+#submit-score:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+#submitting-message {
+    margin-top: 10px;
+    color: #4CAF50;
+    font-size: 12px;
+}
+
+#play-again-container {
+    margin-top: 20px;
+}
+
+#play-again-from-gameover {
+    padding: 10px 20px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+    font-family: 'Courier New', monospace;
+}
+
+#play-again-from-gameover:hover {
+    background-color: #45a049;
 }
 
 #leaderboard-list {

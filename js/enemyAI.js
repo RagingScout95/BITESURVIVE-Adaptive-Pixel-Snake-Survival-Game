@@ -1,4 +1,5 @@
 import { DIRECTIONS } from './constants.js';
+import { Debug } from './debug.js';
 
 export class EnemyAI {
     constructor(snake, grid, playerSnake, foodSystem) {
@@ -27,10 +28,10 @@ export class EnemyAI {
         // Calculate distance to player
         const distToPlayer = this.manhattanDistance(head, playerHead);
         
-        console.log(`\n[EnemyAI] ===== DECISION CYCLE =====`);
-        console.log(`[EnemyAI] Position: (${head.x}, ${head.y}), Energy: ${this.snake.energy.toFixed(1)}`);
-        console.log(`[EnemyAI] Player distance: ${distToPlayer}, Attack radius: ${this.PLAYER_ATTACK_RADIUS}`);
-        console.log(`[EnemyAI] Foods available: ${foods.length}`);
+        Debug.log(`\n[EnemyAI] ===== DECISION CYCLE =====`);
+        Debug.log(`[EnemyAI] Position: (${head.x}, ${head.y}), Energy: ${this.snake.energy.toFixed(1)}`);
+        Debug.log(`[EnemyAI] Player distance: ${distToPlayer}, Attack radius: ${this.PLAYER_ATTACK_RADIUS}`);
+        Debug.log(`[EnemyAI] Foods available: ${foods.length}`);
         
         // Simple and clear algorithm:
         // 1. If player is near (within attack radius) → ATTACK PLAYER (with random energy threshold)
@@ -67,14 +68,14 @@ export class EnemyAI {
             decision = `👤 SEEK PLAYER (No food available, Distance: ${distToPlayer})`;
         }
         
-        console.log(`[EnemyAI] Decision: ${decision}`);
-        console.log(`[EnemyAI] Next action: Moving towards ${targetPos ? `(${targetPos.x}, ${targetPos.y})` : 'NONE'}`);
+        Debug.log(`[EnemyAI] Decision: ${decision}`);
+        Debug.log(`[EnemyAI] Next action: Moving towards ${targetPos ? `(${targetPos.x}, ${targetPos.y})` : 'NONE'}`);
         
         // ALWAYS execute movement towards target (never random)
         if (targetPos) {
             this.moveTowards(targetPos);
         } else {
-            console.log(`[EnemyAI] ⚠️ WARNING: No target position! Continuing forward`);
+            Debug.log(`[EnemyAI] ⚠️ WARNING: No target position! Continuing forward`);
             // This should never happen, but if it does, continue forward
             const testPos = {
                 x: this.grid.wrapX(head.x + this.snake.direction.x),
@@ -85,7 +86,7 @@ export class EnemyAI {
             }
         }
         
-        console.log(`[EnemyAI] ============================\n`);
+        Debug.log(`[EnemyAI] ============================\n`);
     }
 
     findNearestFoodInRange(foods) {
@@ -120,10 +121,10 @@ export class EnemyAI {
         // Log food analysis
         if (foodDistances.length > 0) {
             foodDistances.sort((a, b) => a.dist - b.dist);
-            console.log(`[EnemyAI] Food analysis (sorted by distance):`);
+            Debug.log(`[EnemyAI] Food analysis (sorted by distance):`);
             foodDistances.slice(0, 3).forEach((fd, idx) => {
                 const marker = fd.food === nearest ? '⭐' : '  ';
-                console.log(`[EnemyAI] ${marker} Food at (${fd.food.x}, ${fd.food.y}) - Distance: ${fd.dist}`);
+                Debug.log(`[EnemyAI] ${marker} Food at (${fd.food.x}, ${fd.food.y}) - Distance: ${fd.dist}`);
             });
         }
 
@@ -132,7 +133,7 @@ export class EnemyAI {
 
     moveTowards(target) {
         if (!target || target.x === undefined || target.y === undefined) {
-            console.log(`[EnemyAI] ❌ Invalid target in moveTowards:`, target);
+            Debug.log(`[EnemyAI] ❌ Invalid target in moveTowards:`, target);
             this.roam();
             return;
         }
@@ -164,11 +165,11 @@ export class EnemyAI {
         
         // Check if we're already at target (for food)
         if (wrappedDx === 0 && wrappedDy === 0) {
-            console.log(`[EnemyAI] ✅ Already at target position (${wrappedTarget.x}, ${wrappedTarget.y})`);
+            Debug.log(`[EnemyAI] ✅ Already at target position (${wrappedTarget.x}, ${wrappedTarget.y})`);
             return;
         }
         
-        console.log(`[EnemyAI] 🚶 Moving: Head(${wrappedHead.x}, ${wrappedHead.y}) → Target(${wrappedTarget.x}, ${wrappedTarget.y}), Delta: (${wrappedDx}, ${wrappedDy})`);
+        Debug.log(`[EnemyAI] 🚶 Moving: Head(${wrappedHead.x}, ${wrappedHead.y}) → Target(${wrappedTarget.x}, ${wrappedTarget.y}), Delta: (${wrappedDx}, ${wrappedDy})`);
 
         // Choose direction - prioritize the axis with larger distance
         let newDir = this.snake.direction;

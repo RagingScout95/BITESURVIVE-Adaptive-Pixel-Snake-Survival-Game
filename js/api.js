@@ -1,4 +1,6 @@
 // GraphQL API Client
+import { Debug } from './debug.js';
+
 const GRAPHQL_ENDPOINT = 'http://localhost:8080/graphql';
 
 export class GameAPI {
@@ -51,7 +53,7 @@ export class GameAPI {
 
             return result.data.submitScore;
         } catch (error) {
-            console.error('Error submitting score:', error);
+            Debug.error('Error submitting score:', error);
             throw error;
         }
     }
@@ -94,7 +96,7 @@ export class GameAPI {
 
             return result.data.getLeaderboard;
         } catch (error) {
-            console.error('Error fetching leaderboard:', error);
+            Debug.error('Error fetching leaderboard:', error);
             throw error;
         }
     }

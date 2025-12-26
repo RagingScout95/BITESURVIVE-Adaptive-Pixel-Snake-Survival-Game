@@ -7,6 +7,7 @@ import { WallSystem } from './wallSystem.js';
 import { LevelGenerator } from './levelGenerator.js';
 import { DifficultySystem } from './difficulty.js';
 import { GameAPI } from './api.js';
+import { Debug } from './debug.js';
 import {
     TILE_SIZE,
     CANVAS_WIDTH,
@@ -71,9 +72,9 @@ class Game {
 
             this.spriteRenderer = new SpriteRenderer(this.canvas, atlasImage);
             this.canvasBackground = canvasBg;
-            console.log('Assets loaded successfully');
+            Debug.log('Assets loaded successfully');
         } catch (error) {
-            console.error('Failed to load assets:', error);
+            Debug.error('Failed to load assets:', error);
             alert('Failed to load game assets. Please ensure assets/all_stuff.png and assets/canvas.png exist.');
         }
     }
@@ -81,12 +82,16 @@ class Game {
     setupEventListeners() {
         // Keyboard input
         document.addEventListener('keydown', (e) => {
-            this.keys[e.key.toLowerCase()] = true;
-            this.handleInput(e.key.toLowerCase());
+            if (e.key) {
+                this.keys[e.key.toLowerCase()] = true;
+                this.handleInput(e.key.toLowerCase());
+            }
         });
 
         document.addEventListener('keyup', (e) => {
-            this.keys[e.key.toLowerCase()] = false;
+            if (e.key) {
+                this.keys[e.key.toLowerCase()] = false;
+            }
         });
 
         // UI buttons
@@ -100,6 +105,28 @@ class Game {
 
         document.getElementById('play-again').addEventListener('click', () => {
             this.resetGame();
+        });
+
+        document.getElementById('play-again-from-gameover').addEventListener('click', () => {
+            // Reset game state
+            this.grid.walls.clear();
+            this.grid.portals.clear();
+            this.grid.clearOccupied();
+            this.foodSystem.clear();
+            this.enemySnakes = [];
+            this.enemyAIs = [];
+            this.enemyRespawnQueue = [];
+            this.playerSnake = null;
+            
+            // Hide all screens
+            document.getElementById('game-over-screen').classList.add('hidden');
+            document.getElementById('leaderboard-screen').classList.add('hidden');
+            document.getElementById('pause-screen').classList.add('hidden');
+            document.getElementById('start-screen').classList.add('hidden');
+            
+            // Reload leaderboard and start game directly
+            this.loadLeaderboard();
+            this.startGame();
         });
     }
 
@@ -282,7 +309,7 @@ class Game {
                     const newAI = new EnemyAI(newEnemy, this.grid, this.playerSnake, this.foodSystem);
                     this.enemySnakes.push(newEnemy);
                     this.enemyAIs.push(newAI);
-                    console.log(`[Main] Enemy respawned at (${enemySpawn.x}, ${enemySpawn.y})`);
+                    Debug.log(`[Main] Enemy respawned at (${enemySpawn.x}, ${enemySpawn.y})`);
                 }
                 this.enemyRespawnQueue.splice(i, 1);
             }
@@ -299,7 +326,7 @@ class Game {
                     ai: this.enemyAIs[i],
                     respawnTime: respawnTime
                 });
-                console.log(`[Main] Enemy died, will respawn in ${this.ENEMY_RESPAWN_DELAY/1000} seconds`);
+                Debug.log(`[Main] Enemy died, will respawn in ${this.ENEMY_RESPAWN_DELAY/1000} seconds`);
                 this.enemySnakes.splice(i, 1);
                 this.enemyAIs.splice(i, 1);
                 continue;
@@ -319,7 +346,7 @@ class Game {
             
             const enemyFood = this.foodSystem.getFoodAt(wrappedEnemyHead);
             if (enemyFood) {
-                console.log(`[Main] Enemy ate food at (${wrappedEnemyHead.x}, ${wrappedEnemyHead.y}), Energy: ${enemyFood.energy}, Enemy will grow!`);
+                Debug.log(`[Main] Enemy ate food at (${wrappedEnemyHead.x}, ${wrappedEnemyHead.y}), Energy: ${enemyFood.energy}, Enemy will grow!`);
                 enemy.eat(enemyFood.energy);
                 this.foodSystem.removeFood(wrappedEnemyHead);
             }
@@ -493,11 +520,53 @@ class Game {
             'You starved!' :
             'You collided!';
         document.getElementById('game-over-message').textContent = message;
+        
+        // Store game stats (but don't display yet)
+        const minutes = Math.floor(this.timeSurvived / 60);
+        const seconds = Math.floor(this.timeSurvived % 60);
+        document.getElementById('final-time').textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+        document.getElementById('final-score').textContent = this.score;
+        document.getElementById('final-length').textContent = this.playerSnake.getLength();
+        document.getElementById('final-difficulty').textContent = this.difficultySystem.getDifficulty();
+        document.getElementById('final-rank').textContent = '-';
+        document.getElementById('final-percentage').textContent = '-';
+        
+        // Reset UI state - show only input, hide stats
+        const submitButton = document.getElementById('submit-score');
+        const nameInput = document.getElementById('player-name');
+        const submittingMessage = document.getElementById('submitting-message');
+        const scoreInputContainer = document.getElementById('score-input-container');
+        const playAgainContainer = document.getElementById('play-again-container');
+        const gameStats = document.getElementById('game-stats');
+        
+        submitButton.disabled = false;
+        nameInput.disabled = false;
+        submitButton.textContent = 'Submit Score';
+        submittingMessage.classList.add('hidden');
+        scoreInputContainer.classList.remove('hidden');
+        playAgainContainer.classList.add('hidden');
+        gameStats.classList.add('hidden'); // Hide stats initially
+        
+        // Clear name input
+        nameInput.value = '';
+        
         document.getElementById('game-over-screen').classList.remove('hidden');
     }
 
     async submitScore() {
-        const playerName = document.getElementById('player-name').value.trim() || 'Anonymous';
+        const submitButton = document.getElementById('submit-score');
+        const nameInput = document.getElementById('player-name');
+        const submittingMessage = document.getElementById('submitting-message');
+        const scoreInputContainer = document.getElementById('score-input-container');
+        const playAgainContainer = document.getElementById('play-again-container');
+
+        // Disable button and show loading
+        submitButton.disabled = true;
+        nameInput.disabled = true;
+        submittingMessage.classList.remove('hidden');
+        submitButton.textContent = 'Submitting...';
+
+        const playerName = nameInput.value.trim() || 'Anonymous';
 
         const scoreData = {
             playerName,
@@ -510,19 +579,70 @@ class Game {
         try {
             await GameAPI.submitScore(scoreData);
             const leaderboard = await GameAPI.getLeaderboard();
-            this.showLeaderboard(leaderboard);
+            this.calculateAndShowStats(leaderboard, scoreData);
             this.updateLeaderboardPanel(leaderboard); // Update right panel leaderboard
+            
+            // Hide input container, show stats and Play Again button
+            scoreInputContainer.classList.add('hidden');
+            document.getElementById('game-stats').classList.remove('hidden');
+            playAgainContainer.classList.remove('hidden');
         } catch (error) {
-            console.error('Failed to submit score:', error);
-            // Show leaderboard even if submission fails
+            Debug.error('Failed to submit score:', error);
+            // Try to get leaderboard even if submission fails
             try {
                 const leaderboard = await GameAPI.getLeaderboard();
-                this.showLeaderboard(leaderboard);
+                this.calculateAndShowStats(leaderboard, scoreData);
                 this.updateLeaderboardPanel(leaderboard); // Update right panel leaderboard
+                
+                // Hide input container, show stats and Play Again button
+                scoreInputContainer.classList.add('hidden');
+                document.getElementById('game-stats').classList.remove('hidden');
+                playAgainContainer.classList.remove('hidden');
             } catch (e) {
+                // Re-enable button on error
+                submitButton.disabled = false;
+                nameInput.disabled = false;
+                submittingMessage.classList.add('hidden');
+                submitButton.textContent = 'Submit Score';
                 alert('Failed to connect to server. Please ensure the backend is running.');
             }
         }
+    }
+
+    calculateAndShowStats(leaderboard, scoreData) {
+        if (!leaderboard || leaderboard.length === 0) {
+            document.getElementById('final-rank').textContent = '#1';
+            document.getElementById('final-percentage').textContent = '100%';
+            return;
+        }
+
+        // Find player's rank (sorted by score descending)
+        const sortedLeaderboard = [...leaderboard].sort((a, b) => b.score - a.score);
+        const playerRank = sortedLeaderboard.findIndex(entry => 
+            entry.playerName === scoreData.playerName &&
+            entry.score === scoreData.score &&
+            entry.timeSurvived === scoreData.timeSurvived
+        ) + 1;
+
+        // If not found, calculate rank based on score
+        let rank = sortedLeaderboard.length + 1;
+        if (playerRank > 0) {
+            rank = playerRank;
+        } else {
+            // Calculate where this score would rank
+            rank = sortedLeaderboard.filter(entry => entry.score > scoreData.score).length + 1;
+        }
+
+        // Calculate top percentage
+        const totalPlayers = sortedLeaderboard.length;
+        const playersAbove = rank - 1;
+        const percentage = totalPlayers > 0 
+            ? Math.round(((totalPlayers - playersAbove) / totalPlayers) * 100)
+            : 100;
+
+        // Update display
+        document.getElementById('final-rank').textContent = `#${rank}`;
+        document.getElementById('final-percentage').textContent = `Top ${percentage}%`;
     }
 
     showLeaderboard(leaderboard) {
@@ -553,7 +673,7 @@ class Game {
             const leaderboard = await GameAPI.getLeaderboard();
             this.updateLeaderboardPanel(leaderboard);
         } catch (error) {
-            console.error('Failed to load leaderboard:', error);
+            Debug.error('Failed to load leaderboard:', error);
             const leaderboardContent = document.getElementById('leaderboard-content');
             if (leaderboardContent) {
                 leaderboardContent.innerHTML = '<p class="message-item">Unable to load leaderboard.</p>';
@@ -596,8 +716,14 @@ class Game {
         this.enemyRespawnQueue = [];
         this.playerSnake = null;
 
+        // Hide all game screens
+        document.getElementById('game-over-screen').classList.add('hidden');
         document.getElementById('leaderboard-screen').classList.add('hidden');
+        document.getElementById('pause-screen').classList.add('hidden');
+        
+        // Show start screen
         document.getElementById('start-screen').classList.remove('hidden');
+        
         this.gameState = 'start';
         this.loadLeaderboard(); // Reload leaderboard when resetting
     }
