@@ -22,9 +22,27 @@ export class FoodSystem {
             const pos = validPositions.splice(randomIndex, 1)[0];
             
             const type = this.foodTypes[Math.floor(Math.random() * this.foodTypes.length)];
-            const energy = ENERGY_FOOD_BASE + Math.floor(Math.random() * 10);
             
-            this.foods.push({ x: pos.x, y: pos.y, type, energy });
+            // Different food types have different energy values
+            let energy = 0;
+            let speedBoost = 0; // Duration in milliseconds
+            
+            if (type === TILES.FOOD_1) {
+                // FOOD_1: Less energy (10-15)
+                energy = 10 + Math.floor(Math.random() * 6);
+            } else if (type === TILES.FOOD_2) {
+                // FOOD_2: More energy (30-40)
+                energy = 30 + Math.floor(Math.random() * 11);
+            } else if (type === TILES.FOOD_3) {
+                // FOOD_3: Normal energy (20-25)
+                energy = 20 + Math.floor(Math.random() * 6);
+            } else if (type === TILES.FOOD_4) {
+                // FOOD_4: Speed boost (1-2 seconds), no energy
+                energy = 0;
+                speedBoost = 1000 + Math.floor(Math.random() * 1000); // 1-2 seconds
+            }
+            
+            this.foods.push({ x: pos.x, y: pos.y, type, energy, speedBoost });
             this.grid.setOccupied(pos, true);
         }
     }

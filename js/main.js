@@ -261,8 +261,15 @@ class Game {
         const now = performance.now();
         // Calculate dynamic tick time based on difficulty (faster = lower tick time)
         const currentDifficulty = this.difficultySystem ? this.difficultySystem.getDifficulty() : 1;
-        const speedMultiplier = 1 + (currentDifficulty - 1) * 0.15; // 15% faster per difficulty level
-        const dynamicTickMs = Math.max(40, GAME_TICK_MS / speedMultiplier); // Minimum 40ms tick time
+        const speedMultiplier = 1 + (currentDifficulty - 1) * 0.1; // 10% faster per difficulty level (reduced from 15%)
+        
+        // Apply speed boost if player has it active
+        let finalSpeedMultiplier = speedMultiplier;
+        if (this.playerSnake && this.playerSnake.hasSpeedBoost()) {
+            finalSpeedMultiplier *= 1.2; // 20% speed boost (reduced from 50%)
+        }
+        
+        const dynamicTickMs = Math.max(40, GAME_TICK_MS / finalSpeedMultiplier); // Minimum 40ms tick time
         
         if (now - this.lastTick >= dynamicTickMs) {
             const actualElapsed = now - this.lastTick;
@@ -292,7 +299,7 @@ class Game {
         const playerHead = this.playerSnake.getHead();
         const food = this.foodSystem.getFoodAt(playerHead);
         if (food) {
-            this.playerSnake.eat(food.energy);
+            this.playerSnake.eat(food.energy, food.speedBoost || 0);
             this.foodSystem.removeFood(playerHead);
             this.score += Math.max(10, food.energy); // Score based on food energy
         }
@@ -347,7 +354,7 @@ class Game {
             const enemyFood = this.foodSystem.getFoodAt(wrappedEnemyHead);
             if (enemyFood) {
                 Debug.log(`[Main] Enemy ate food at (${wrappedEnemyHead.x}, ${wrappedEnemyHead.y}), Energy: ${enemyFood.energy}, Enemy will grow!`);
-                enemy.eat(enemyFood.energy);
+                enemy.eat(enemyFood.energy, enemyFood.speedBoost || 0);
                 this.foodSystem.removeFood(wrappedEnemyHead);
             }
 

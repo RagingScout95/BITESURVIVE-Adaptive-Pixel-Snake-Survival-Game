@@ -13,7 +13,9 @@ export class Snake {
         this.growthPending = 0;
         this.alive = true;
         this.justTeleported = false; // Track if snake just teleported through portal
-        this.hasReceivedInput = isEnemy; // Enemies can move immediately, player waits for input
+        this.hasReceivedInput = true; // All snakes can move immediately (player can control direction with keys)
+        this.speedBoostEndTime = 0; // When speed boost expires (timestamp)
+        this.sizeReductionPending = 0; // Track pending size reductions when energy is low
 
         // Initialize body - create segments going backwards from head
         // Each segment should be exactly 1 tile away from the previous
@@ -104,22 +106,50 @@ export class Snake {
         // Add new head
         this.body.unshift(newHead);
 
+        // Calculate hunger multiplier based on size and speed
+        // Hunger increases with snake length (size)
+        const sizeFactor = 1 + (this.body.length - 3) * 0.05; // 5% more hunger per segment above 3
+        // Hunger increases with speed (difficulty/energyDrainMultiplier)
+        const speedFactor = energyDrainMultiplier;
+        // Combined hunger multiplier
+        const hungerMultiplier = sizeFactor * speedFactor;
+
+        // Check if energy is low (10% or less) - start reducing size (fast reduction)
+        const energyPercent = (this.energy / this.maxEnergy) * 100;
+        const shouldReduceSize = energyPercent <= 10 && this.body.length > 3;
+
         // Handle growth
-        if (this.growthPending > 0) {
+        if (this.growthPending > 0 && !shouldReduceSize) {
+            // Normal growth - don't remove tail
             this.growthPending--;
         } else {
-            // Remove tail
-            const tail = this.body.pop();
-            this.grid.setOccupied(tail, false);
+            // Remove tail (either normal movement or size reduction)
+            if (shouldReduceSize) {
+                // Fast size reduction when energy is low - reduce every move
+                this.sizeReductionPending++;
+                // Reduce size immediately when energy is critically low
+                if (this.sizeReductionPending >= 1) {
+                    const tail = this.body.pop();
+                    this.grid.setOccupied(tail, false);
+                    this.sizeReductionPending = 0;
+                    // Cancel any pending growth when reducing size
+                    this.growthPending = 0;
+                }
+            } else {
+                // Normal tail removal
+                const tail = this.body.pop();
+                this.grid.setOccupied(tail, false);
+                this.sizeReductionPending = 0;
+            }
         }
 
         // Update occupied tiles
         this.grid.setOccupied(newHead, true);
 
-        // Drain energy (scaled by difficulty multiplier)
-        let energyDrain = ENERGY_DRAIN_MOVE * energyDrainMultiplier;
+        // Drain energy (scaled by difficulty multiplier and hunger)
+        let energyDrain = ENERGY_DRAIN_MOVE * energyDrainMultiplier * hungerMultiplier;
         if (wasTurning) {
-            energyDrain += ENERGY_DRAIN_TURN * energyDrainMultiplier;
+            energyDrain += ENERGY_DRAIN_TURN * energyDrainMultiplier * hungerMultiplier;
         }
         this.energy = Math.max(0, this.energy - energyDrain);
 
@@ -128,9 +158,20 @@ export class Snake {
         }
     }
 
-    eat(foodEnergy) {
+    eat(foodEnergy, speedBoost = 0) {
         this.energy = Math.min(this.maxEnergy, this.energy + foodEnergy);
-        this.growthPending++;
+        if (foodEnergy > 0) {
+            this.growthPending++;
+        }
+        
+        // Apply speed boost if provided
+        if (speedBoost > 0) {
+            this.speedBoostEndTime = Date.now() + speedBoost;
+        }
+    }
+    
+    hasSpeedBoost() {
+        return Date.now() < this.speedBoostEndTime;
     }
 
     getHead() {

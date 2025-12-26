@@ -93,8 +93,8 @@ export const DIRECTIONS = {
 
 // Game Settings
 export const INITIAL_ENERGY = 100;
-export const ENERGY_DRAIN_MOVE = 0.1;
-export const ENERGY_DRAIN_TURN = 0.2;
+export const ENERGY_DRAIN_MOVE = 0.4; // Increased - faster energy drain
+export const ENERGY_DRAIN_TURN = 0.6; // Increased - faster energy drain on turns
 export const ENERGY_FOOD_BASE = 20;
 export const INITIAL_SNAKE_LENGTH = 3;
 export const GAME_TICK_MS = 120;
