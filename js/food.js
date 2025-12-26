@@ -1,0 +1,58 @@
+import { TILES, ENERGY_FOOD_BASE } from './constants.js';
+
+export class FoodSystem {
+    constructor(grid) {
+        this.grid = grid;
+        this.foods = []; // Array of {x, y, type, energy}
+        this.foodTypes = [TILES.FOOD_1, TILES.FOOD_2, TILES.FOOD_3, TILES.FOOD_4];
+    }
+
+    spawnFood(count = 1, difficulty = 1) {
+        const validPositions = this.grid.getValidPositions().filter(pos => {
+            // Don't spawn on occupied tiles, walls, or portals
+            return !this.grid.isOccupied(pos) && 
+                   !this.grid.isWall(pos) && 
+                   !this.grid.isPortal(pos);
+        });
+
+        if (validPositions.length === 0) return;
+
+        for (let i = 0; i < count && validPositions.length > 0; i++) {
+            const randomIndex = Math.floor(Math.random() * validPositions.length);
+            const pos = validPositions.splice(randomIndex, 1)[0];
+            
+            const type = this.foodTypes[Math.floor(Math.random() * this.foodTypes.length)];
+            const energy = ENERGY_FOOD_BASE + Math.floor(Math.random() * 10);
+            
+            this.foods.push({ x: pos.x, y: pos.y, type, energy });
+            this.grid.setOccupied(pos, true);
+        }
+    }
+
+    removeFood(pos) {
+        const index = this.foods.findIndex(f => f.x === pos.x && f.y === pos.y);
+        if (index !== -1) {
+            const food = this.foods[index];
+            this.grid.setOccupied(pos, false);
+            this.foods.splice(index, 1);
+            return food;
+        }
+        return null;
+    }
+
+    getFoodAt(pos) {
+        return this.foods.find(f => f.x === pos.x && f.y === pos.y);
+    }
+
+    clear() {
+        this.foods.forEach(food => {
+            this.grid.setOccupied({ x: food.x, y: food.y }, false);
+        });
+        this.foods = [];
+    }
+
+    getFoods() {
+        return this.foods;
+    }
+}
+

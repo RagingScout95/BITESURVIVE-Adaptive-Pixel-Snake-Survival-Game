@@ -1,0 +1,26 @@
+type Score {
+    id: ID!
+    playerName: String!
+    score: Int!
+    timeSurvived: Int!
+    maxSnakeLength: Int!
+    difficultyReached: Int!
+    createdAt: String!
+}
+
+input ScoreInput {
+    playerName: String
+    score: Int!
+    timeSurvived: Int!
+    maxSnakeLength: Int!
+    difficultyReached: Int!
+}
+
+type Query {
+    getLeaderboard: [Score!]!
+}
+
+type Mutation {
+    submitScore(input: ScoreInput!): Score!
+}
+

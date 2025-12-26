@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Adaptive Pixel Snake - Survival Game</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div id="game-container">
+        <div id="ui-overlay">
+            <div id="hud">
+                <div id="energy-bar-container">
+                    <div id="energy-label">Energy</div>
+                    <div id="energy-bar">
+                        <div id="energy-fill"></div>
+                    </div>
+                    <div id="energy-value">100%</div>
+                </div>
+                <div id="stats">
+                    <div>Length: <span id="length-value">3</span></div>
+                    <div>Time: <span id="time-value">0:00</span></div>
+                    <div>Difficulty: <span id="difficulty-value">1</span></div>
+                </div>
+            </div>
+            <div id="game-over-screen" class="hidden">
+                <h2>Game Over</h2>
+                <p id="game-over-message"></p>
+                <div id="score-input-container">
+                    <input type="text" id="player-name" placeholder="Enter your name" maxlength="20">
+                    <button id="submit-score">Submit Score</button>
+                </div>
+            </div>
+            <div id="leaderboard-screen" class="hidden">
+                <h2>Leaderboard</h2>
+                <div id="leaderboard-list"></div>
+                <button id="play-again">Play Again</button>
+            </div>
+            <div id="pause-screen" class="hidden">
+                <h2>Paused</h2>
+                <p>Press P to resume</p>
+            </div>
+            <div id="start-screen">
+                <h1>Adaptive Pixel Snake</h1>
+                <p>Survive as long as possible!</p>
+                <p>Controls: WASD or Arrow Keys</p>
+                <button id="start-button">Start Game</button>
+            </div>
+        </div>
+        <canvas id="game-canvas"></canvas>
+    </div>
+    <script type="module" src="js/main.js"></script>
+</body>
+</html>
+
