@@ -20,6 +20,9 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
+    /* Scale up the entire game for better visibility (2x) */
+    transform: scale(2);
+    transform-origin: center center;
 }
 
 #game-canvas {

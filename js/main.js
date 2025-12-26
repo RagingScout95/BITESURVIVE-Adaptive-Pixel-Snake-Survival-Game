@@ -100,6 +100,13 @@ class Game {
     }
 
     handleInput(key) {
+        // Pause key works in both playing and paused states
+        if (key === 'p') {
+            this.togglePause();
+            return;
+        }
+
+        // Other controls only work when playing
         if (this.gameState !== 'playing') return;
 
         switch (key) {
@@ -118,9 +125,6 @@ class Game {
             case 'd':
             case 'arrowright':
                 this.playerSnake.setDirection(DIRECTIONS.RIGHT);
-                break;
-            case 'p':
-                this.togglePause();
                 break;
         }
     }
