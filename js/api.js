@@ -7,7 +7,7 @@ const isDevelopment = window.location.hostname === 'localhost' ||
 
 const GRAPHQL_ENDPOINT = isDevelopment 
     ? 'http://localhost:8080/graphql'  // Development
-    : 'https://api.ragingscout97.in/graphql';  // Production
+    : 'http://api.ragingscout97.in/graphql';  // Production (HTTP - TEMPORARY)
 
 Debug.log(`Environment: ${isDevelopment ? 'Development' : 'Production'}`);
 Debug.log(`GraphQL Endpoint: ${GRAPHQL_ENDPOINT}`);

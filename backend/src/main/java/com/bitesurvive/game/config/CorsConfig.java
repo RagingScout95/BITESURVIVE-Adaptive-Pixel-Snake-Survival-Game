@@ -23,7 +23,8 @@ public class CorsConfig {
             "http://localhost:8000",                    // Local development
             "http://127.0.0.1:8000",                    // Local development
             "https://bitesurvive.ragingscout97.in",     // Production frontend
-            "https://api.ragingscout97.in"              // Production API (for testing)
+            "http://api.ragingscout97.in",              // Production API HTTP (temporary)
+            "https://api.ragingscout97.in"              // Production API HTTPS (for testing)
         ));
         
         config.addAllowedHeader("*");
