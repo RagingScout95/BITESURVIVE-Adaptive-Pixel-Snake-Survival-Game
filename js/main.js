@@ -103,6 +103,10 @@ class Game {
             this.submitScore();
         });
 
+        document.getElementById('skip-submit').addEventListener('click', () => {
+            this.skipSubmitAndRestart();
+        });
+
         document.getElementById('play-again').addEventListener('click', () => {
             this.resetGame();
         });
@@ -614,6 +618,28 @@ class Game {
                 alert('Failed to connect to server. Please ensure the backend is running.');
             }
         }
+    }
+
+    skipSubmitAndRestart() {
+        // Reset game state
+        this.grid.walls.clear();
+        this.grid.portals.clear();
+        this.grid.clearOccupied();
+        this.foodSystem.clear();
+        this.enemySnakes = [];
+        this.enemyAIs = [];
+        this.enemyRespawnQueue = [];
+        this.playerSnake = null;
+        
+        // Hide all screens
+        document.getElementById('game-over-screen').classList.add('hidden');
+        document.getElementById('leaderboard-screen').classList.add('hidden');
+        document.getElementById('pause-screen').classList.add('hidden');
+        document.getElementById('start-screen').classList.add('hidden');
+        
+        // Reload leaderboard and start game directly
+        this.loadLeaderboard();
+        this.startGame();
     }
 
     calculateAndShowStats(leaderboard, scoreData) {

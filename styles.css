@@ -367,21 +367,62 @@ body {
 
 #start-button,
 #submit-score,
+#skip-submit,
+#play-again {
+    padding: 12px 24px !important;
+    background-color: #4CAF50;
+    color: white !important;
+    border: none !important;
+    cursor: pointer !important;
+    font-size: 16px !important;
+    font-family: 'Courier New', monospace !important;
+    border-radius: 4px !important;
+    transition: all 0.3s ease !important;
+    font-weight: bold !important;
+    text-transform: uppercase !important;
+    letter-spacing: 1px !important;
+}
+
+#start-button,
 #play-again {
     margin-top: 20px;
-    padding: 10px 20px;
-    background-color: #4CAF50;
-    color: white;
-    border: none;
-    cursor: pointer;
-    font-size: 16px;
-    font-family: 'Courier New', monospace;
+}
+
+/* Game Over Buttons Styling - Updated v2 */
+#skip-submit {
+    background-color: #2196F3 !important;
+    border: none !important;
+    outline: none !important;
 }
 
 #start-button:hover,
 #submit-score:hover,
 #play-again:hover {
-    background-color: #45a049;
+    background-color: #45a049 !important;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(76, 175, 80, 0.4);
+}
+
+#skip-submit:hover {
+    background-color: #1976D2 !important;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(33, 150, 243, 0.4);
+}
+
+#start-button:active,
+#submit-score:active,
+#skip-submit:active,
+#play-again:active {
+    transform: translateY(0);
+    box-shadow: none;
+}
+
+#game-over-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-top: 15px;
+    flex-wrap: wrap;
 }
 
 #player-name {
