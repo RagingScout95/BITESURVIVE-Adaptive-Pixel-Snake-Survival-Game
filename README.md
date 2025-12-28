@@ -3,6 +3,10 @@
 **BiteSurvive** is a grid-based pixel snake survival game built with **HTML5 Canvas**.  
 Survive by managing **energy/hunger**, navigating **procedurally generated levels**, and avoiding **predator snakes**.
 
+## 🎮 Play Now
+
+**[Play BiteSurvive](https://bitesurvive.ragingscout97.in/)** — Live Demo
+
 An optional **Spring Boot + GraphQL** backend is included for leaderboard persistence.
 
 ## Features
