@@ -13,7 +13,7 @@
     </parent>
     
     <groupId>com.bitesurvive</groupId>
-    <artifactId>game-backend</artifactId>
+    <artifactId>bitesurvive-backend</artifactId>
     <version>1.0.0</version>
     <name>BiteSurvive Game Backend</name>
     <description>Backend API for Adaptive Pixel Snake Survival Game</description>
@@ -70,6 +70,7 @@
     </dependencies>
     
     <build>
+        <finalName>bitesurvive-backend</finalName>
         <plugins>
             <plugin>
                 <groupId>org.springframework.boot</groupId>
