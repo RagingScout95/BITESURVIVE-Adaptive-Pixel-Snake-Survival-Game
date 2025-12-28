@@ -1,0 +1,19 @@
+# Backend files
+backend/
+
+# Deployment scripts
+deploy-backend.bat
+deploy.md
+
+# Development files
+run-frontend.bat
+run-backend.bat
+
+# Git
+.git/
+.gitignore
+
+# Documentation
+README.md
+LICENSE
+

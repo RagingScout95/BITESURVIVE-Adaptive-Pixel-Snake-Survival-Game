@@ -1,7 +1,16 @@
 // GraphQL API Client
 import { Debug } from './debug.js';
 
-const GRAPHQL_ENDPOINT = 'http://localhost:8080/graphql';
+// Detect environment and set appropriate endpoint
+const isDevelopment = window.location.hostname === 'localhost' || 
+                      window.location.hostname === '127.0.0.1';
+
+const GRAPHQL_ENDPOINT = isDevelopment 
+    ? 'http://localhost:8080/graphql'  // Development
+    : 'https://api.ragingscout97.in/graphql';  // Production
+
+Debug.log(`Environment: ${isDevelopment ? 'Development' : 'Production'}`);
+Debug.log(`GraphQL Endpoint: ${GRAPHQL_ENDPOINT}`);
 
 export class GameAPI {
     static async submitScore(scoreData) {
