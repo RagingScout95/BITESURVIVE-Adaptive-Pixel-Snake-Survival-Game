@@ -35,6 +35,7 @@ build/
 # Deployment docs & scripts (sensitive server info)
 deploy.md
 deploy-backend.sh
+deploy-backend.bat
 
 # Local backups
 assets/all_stuff_1.png
