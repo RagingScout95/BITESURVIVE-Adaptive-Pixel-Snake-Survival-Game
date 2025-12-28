@@ -32,6 +32,9 @@ build/
 .env
 .env.*
 
+# Deployment docs (sensitive server info)
+deploy.md
+
 # Local backups
 assets/all_stuff_1.png
 
